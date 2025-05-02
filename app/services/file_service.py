@@ -1,5 +1,5 @@
 from PyPDF2 import PdfReader
-from typing import BinaryIO
+from typing import BinaryIO, Union
 
 from fastapi import UploadFile
 
@@ -12,15 +12,20 @@ import shutil
 
 DESTINATION_PATH = Path("/Users/syahirghariff/Developer/personal-finance-project/bank_statement")
 
-
-def extract_file_information(file: BinaryIO) -> StatementData:
-    contents = file.read()
+def extract_file_information_then_move(file: UploadFile, user_id: str) -> StatementData:
+    contents = file.file.read()
     buffer = BytesIO(contents)
+    author, title = extract_file_information(buffer)
+    path = move_file_directory(file, user_id)
+
+    return StatementData(author, title, path)
+
+def extract_file_information(buffer: BytesIO) -> tuple[str | None, str | None]:
     pdf_reader = PdfReader(buffer)
     metadata = pdf_reader.metadata
 
     if metadata and metadata.title and metadata.author:
-        return StatementData(metadata.author, metadata.title)
+        return metadata.author, metadata.title
 
     page = pdf_reader.pages[0]
     text = page.extract_text()
@@ -30,7 +35,7 @@ def extract_file_information(file: BinaryIO) -> StatementData:
         if result:
             return result
 
-    return StatementData(author=None, title=None)
+    return None, None
 
 
 def move_file_directory(file: UploadFile, user_id: str) -> str | None:

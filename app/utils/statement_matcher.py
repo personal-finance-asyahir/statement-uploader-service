@@ -3,14 +3,14 @@ from typing import Optional
 from app.model.statement_data import StatementData
 
 class StatementMatcher:
-    def match(self, text:str) -> Optional[StatementData]: ...
+    def match(self, text:str) -> tuple[str | None, str | None]: ...
 
 
 class CimbCreditStatementMatcher(StatementMatcher):
-    def match(self, text:str) -> Optional[StatementData]:
+    def match(self, text:str) -> tuple[str | None, str | None]:
         if ("CIMB".casefold() in text.casefold()
                 and "Credit Card Statement".casefold() in text.casefold()):
-            return StatementData("CIMB", "Credit Card Statement")
+            return "CIMB", "Credit Card Statement"
         return None
 
 # Register Matcher
