@@ -14,7 +14,7 @@ async def upload_statement(file: list[UploadFile],
     statements: list[StatementData] = []
     for f in file:
         statement_data = file_svc.extract_file_information(f.file)
-        statement_data.user_id = x_user_id
         statements.append(statement_data)
+        statement_data.file_path = file_svc.move_file_directory(f, str(x_user_id))
 
     return {"hello": statements}

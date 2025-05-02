@@ -5,4 +5,4 @@ from dataclasses import dataclass
 class StatementData:
     bank: Optional[str]
     title: Optional[str]
-    user_id: Optional[str] = None
+    file_path: Optional[str] = None
