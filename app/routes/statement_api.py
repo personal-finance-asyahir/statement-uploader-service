@@ -11,18 +11,10 @@ router = APIRouter(prefix="/statement", tags=["statement"])
 @router.post("/upload")
 async def upload_statement(file: list[UploadFile],
                            x_user_id: Annotated[uuid.UUID | None, Header()] = None):
-    print("testing file: ", file)
-    all_statement = []
+    statements: list[StatementData] = []
     for f in file:
-        # print("testing loop in file: ", f)
-        # statement_data: StatementData = file_svc.extract_file_title(f.file)
-        # all_statement.append(statement_data)
-        # print('syahir testing x: ', statement_data)
+        statement_data = file_svc.extract_file_information(f.file)
+        statement_data.user_id = x_user_id
+        statements.append(statement_data)
 
-        test = file_svc.extract_file_information(f.file)
-        all_statement.append(test)
-        # print('this is test with pdfplumber: ', test)
-
-    print("testing user_id: ", x_user_id)
-
-    return {"hello": all_statement}
+    return {"hello": statements}

@@ -1,4 +1,8 @@
+from typing import Optional
+from dataclasses import dataclass
+
+@dataclass
 class StatementData:
-    def __init__(self, bank, title):
-        self.bank = bank
-        self.title = title
+    bank: Optional[str]
+    title: Optional[str]
+    user_id: Optional[str] = None
