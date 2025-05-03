@@ -10,17 +10,16 @@ from pathlib import Path
 from datetime import datetime
 import shutil
 
-# DESTINATION_PATH = Path("/Users/syahirghariff/Developer/personal-finance-project/bank_statement")
 
 def extract_file_information_then_move(file: UploadFile, user_id: str) -> StatementData:
     contents = file.file.read()
     buffer = BytesIO(contents)
-    author, title = extract_file_information(buffer)
-    path = move_file_directory(file, user_id)
+    author, title = __extract_file_information(buffer)
+    path = __move_file_directory(file, user_id)
 
     return StatementData(author, title, path)
 
-def extract_file_information(buffer: BytesIO) -> tuple[str | None, str | None]:
+def __extract_file_information(buffer: BytesIO) -> tuple[str | None, str | None]:
     pdf_reader = PdfReader(buffer)
     metadata = pdf_reader.metadata
 
@@ -38,7 +37,7 @@ def extract_file_information(buffer: BytesIO) -> tuple[str | None, str | None]:
     return None, None
 
 
-def move_file_directory(file: UploadFile, user_id: str) -> str | None:
+def __move_file_directory(file: UploadFile, user_id: str) -> str | None:
     date_time = datetime.today().strftime('%Y-%m-%d')
     settings = Settings()
     upload_dir = Path(settings.upload_dir)
