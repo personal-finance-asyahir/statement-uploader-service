@@ -24,5 +24,9 @@ async def upload_statement(file: list[UploadFile],
 
 def __send_kafka_message(statements: list[StatementData], x_user_id: uuid.UUID):
     kafka_producer = KafkaProducerService()
-    serialized_data = json.dumps([asdict(item) for item in statements]).encode("utf-8")
+    statements_payload = []
+    for statement in statements:
+        statements_payload.append(asdict(statement))
+    serialized_data = json.dumps(statements_payload).encode("utf-8")
+    print('serialized_data:', serialized_data)
     kafka_producer.send_event("file.upload", str(x_user_id), serialized_data)
