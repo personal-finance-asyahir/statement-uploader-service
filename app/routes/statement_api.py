@@ -29,4 +29,4 @@ def __send_kafka_message(statements: list[StatementData], x_user_id: uuid.UUID):
         statements_payload.append(asdict(statement))
     serialized_data = json.dumps(statements_payload).encode("utf-8")
     print('serialized_data:', serialized_data)
-    kafka_producer.send_event("file.upload", str(x_user_id), serialized_data)
+    kafka_producer.send_event("statement.upload", str(x_user_id), serialized_data)
