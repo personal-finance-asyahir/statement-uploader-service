@@ -1,3 +1,5 @@
+import uuid
+
 from PyPDF2 import PdfReader
 
 from fastapi import UploadFile
@@ -44,7 +46,9 @@ def __move_file_directory(file: UploadFile, user_id: str) -> str | None:
     destination_path = upload_dir / user_id / str(date_time)
     destination_path.mkdir(parents=True, exist_ok=True)
 
-    destination_path = destination_path / file.filename
+    filename = str(uuid.uuid4()) + ".pdf"
+
+    destination_path = destination_path / filename
 
     file.file.seek(0)
     with destination_path.open("wb") as buffer:
