@@ -11,6 +11,7 @@ from app.utils.statement_matcher import STATEMENT_MATCHERS
 from pathlib import Path
 from datetime import datetime
 import shutil
+import hashlib
 
 
 def extract_file_information_then_move(file: UploadFile, user_id: str) -> StatementData:
@@ -46,7 +47,9 @@ def __move_file_directory(file: UploadFile, user_id: str) -> str | None:
     destination_path = upload_dir / user_id / str(date_time)
     destination_path.mkdir(parents=True, exist_ok=True)
 
-    filename = str(uuid.uuid4()) + ".pdf"
+    original_filename = file.filename or ''
+    md5_hash = hashlib.md5(original_filename.encode('utf-8')).hexdigest()
+    filename = f"{md5_hash}.pdf"
 
     destination_path = destination_path / filename
 

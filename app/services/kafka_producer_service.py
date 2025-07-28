@@ -1,6 +1,4 @@
 import logging
-import json
-from dataclasses import asdict, is_dataclass
 
 from kafka import KafkaProducer
 from datetime import datetime
