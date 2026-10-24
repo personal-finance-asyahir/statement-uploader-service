@@ -1,43 +1,79 @@
-import uuid
-
-from PyPDF2 import PdfReader
-
 from fastapi import UploadFile
-
+from pypdf import PdfReader, mult
+from types import SimpleNamespace
 from app.model.settings import Settings
 from app.model.statement_data import StatementData
 from io import BytesIO
-from app.utils.statement_matcher import STATEMENT_MATCHERS
 from pathlib import Path
 from datetime import datetime
 import shutil
 import hashlib
+import numpy as np
 
 
 def extract_file_information_then_move(file: UploadFile, user_id: str) -> StatementData:
     contents = file.file.read()
     buffer = BytesIO(contents)
-    author, title = __extract_file_information(buffer)
+    statement_data = __extract_file_information(buffer)
     path = __move_file_directory(file, user_id)
+    statement_data.file_path = path
 
-    return StatementData(author, title, path)
+    return statement_data
 
-def __extract_file_information(buffer: BytesIO) -> tuple[str | None, str | None]:
+def __extract_file_information(buffer: BytesIO) -> StatementData:
+
+    def visitor_body(text, cm, tm, font_dict, font_size):
+        text = text.strip()
+        if not text:
+            return
+
+        txt2user = mult(tm, cm)
+        idx = txt2user[4:]
+
+        if (metadata.author == 'Maybank2U.com'
+                and metadata.title == 'Credit Card Statement'):
+            extractor_maybank_credit(obj, idx, text)
+
     pdf_reader = PdfReader(buffer)
     metadata = pdf_reader.metadata
-
-    if metadata and metadata.title and metadata.author:
-        return metadata.author, metadata.title
-
+    obj = SimpleNamespace()
     page = pdf_reader.pages[0]
-    text = page.extract_text()
+    page.extract_text(visitor_text=visitor_body)
 
-    for matcher in STATEMENT_MATCHERS:
-        result = matcher.match(text)
-        if result:
-            return result
+    statement_data = StatementData(name=obj.name,
+                                   bank=obj.bank,
+                                   title=obj.title,
+                                   statement_date=obj.statement_date,
+                                   account_number=obj.account_number,
+                                   current_balance=obj.current_balance,
+                                   previous_balance=obj.previous_balance)
 
-    return None, None
+
+    return statement_data
+
+def extractor_maybank_credit(obj, idx, text):
+    if np.array_equal(idx, [25.0, 785.0]):
+        obj.name = text
+        print("Name: " + text)
+    elif np.array_equal(idx, [413.62, 756.0]):
+        obj.statement_date = text
+        print("Statment Date: " + text)
+    elif np.array_equal(idx, [51.96, 651.2]):
+        obj.account_number = text
+        print("Account Number: " + text)
+    elif np.array_equal(idx, [250.48, 651.2]):
+        obj.current_balance = text
+        print("Current Balance: " + text)
+    elif np.array_equal(idx, [538.48, 288.2]):
+        obj.previous_balance = text
+        print("Previous Statement Balance: " + text)
+    elif np.array_equal(idx, [181.5, 853.0]):
+        obj.title = text
+        print("Title: " + text)
+    elif np.array_equal(idx, [466.9, 829.0]):
+        obj.bank = text
+        print("Bank Name: " + text)
+
 
 
 def __move_file_directory(file: UploadFile, user_id: str) -> str | None:

@@ -1,7 +1,3 @@
-from typing import Optional
-
-from app.model.statement_data import StatementData
-
 class StatementMatcher:
     def match(self, text:str) -> tuple[str | None, str | None]: ...
 
