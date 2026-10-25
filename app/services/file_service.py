@@ -29,9 +29,12 @@ def __extract_file_information(buffer: BytesIO) -> StatementData:
         txt2user = mult(tm, cm)
         idx = txt2user[4:]
 
-        if (metadata.author == 'Maybank2U.com'
-                and metadata.title == 'Credit Card Statement'):
-            maybank_credit_card_statement_extractor(obj, idx, text)
+        if metadata.author == 'Maybank2U.com':
+            if metadata.title == 'Credit Card Statement':
+                maybank_credit_card_statement_extractor(obj, idx, text)
+            if metadata.title == 'Saving Account Statement':
+                maybank_debit_card_statement_extractor(obj, idx, text)
+
 
     pdf_reader = PdfReader(buffer)
     metadata = pdf_reader.metadata
@@ -43,9 +46,12 @@ def __extract_file_information(buffer: BytesIO) -> StatementData:
                                    bank=obj.bank,
                                    title=obj.title,
                                    statement_date=obj.statement_date,
-                                   account_number=obj.account_number,
-                                   current_balance=obj.current_balance,
-                                   previous_balance=obj.previous_balance)
+                                   account_number=obj.account_number)
+
+    if hasattr(obj, 'current_balance'):
+        statement_data.current_balance = obj.current_balance
+    if hasattr(obj, 'previous_balance'):
+        statement_data.previous_balance = obj.previous_balance
 
 
     return statement_data
